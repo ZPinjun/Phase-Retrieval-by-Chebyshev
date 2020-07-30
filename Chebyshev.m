@@ -4,6 +4,7 @@ function [cr, err] = Chebyshev( y, h, m )
 K = length(m);
 N = length(y);
 H = fft(h,N);
+H = reshape(H,[N,1]);
 xi = y./(abs(H)).^2;
 xi(1) = sqrt(xi(1));
 

@@ -4,6 +4,7 @@ function [cr, err] = Chebyshev( y, h, m )
 K = length(m);
 N = length(y);
 H = fft(h,N);
+H = reshape(H,[N,1]);
 xi = y./(abs(H)).^2;
 xi(1) = sqrt(xi(1));
 
@@ -38,7 +39,7 @@ for i = 0:T-1
 %     disp(['第',num2str(i+1),'次方向：',num2str((gc*(fc+beta^2*(f(z)-fc + beta*f1c*gc*fc   ))).')]);
     c = c - gc*(fc+beta^2*(f(z)-fc + beta*f1c*gc*fc   ));
     err(i+1) = (2*K)\norm(f(c),2)^2;
-    disp(['第',num2str(i+1),'误差：',num2str(err(i+1))]);
+    disp(['第',num2str(i+1),'次迭代误差：',num2str(err(i+1))]);
     figure(10)
     plot(0:i,err(1:i+1));
 end

@@ -12,9 +12,12 @@ x(r:r+2,1) = 1.6*h;
 r = 69;
 x(r:r+2,1) = 2.8*h;
 
-c0 = [1.2; 1.6; 2.8];
-m0 = [1; 40; 69];
+c00 = [1.2; 1.6; 2.8];
+m00 = [1; 40; 69];
+% m0 = [39;68;29];
 y = abs(fft(x,N)).^2;
+
+
 
 % %% --------------------------------------------------- 数据处理
 % H = fft(h,N);
@@ -41,34 +44,64 @@ y = abs(fft(x,N)).^2;
 %% --------------------------------------------------- 试验零化滤波器法
 % tkrec = AnnFilter(left, K*(K-1), 1).';  % 好像不太行
 
-%% --------------------------------------------------- 改进的切比雪夫法
-% 数据处理
+% %% --------------------------------------------------- 改进的切比雪夫法
+% % 数据处理
+% H = fft(h,N);
+% H = reshape(H,[N,1]);
+% xi = y./(abs(H)).^2;
+% %  初始化
+% threshold = 10e-4;
+% T = 50;
+% beta = 1;
+% 
+% ccomb = nchoosek(c0,2);
+% c1 = 2*ccomb(:,1).*ccomb(:,2);
+% % m1 = [39;68;29]; m1 = [42;70;30];
+% % m1 = ones(3,1)*(M/3);
+% m1 = floor(rand(floor(K*(K-1)*0.5),1)*M); 
+% f1_m = @(mx) (-2*pi/N)*diag(0:N-1,0)*sin((2*pi/N)*(0:N-1).'*mx.')*diag(c1,0);
+% f_m = @(mx) cos((2*pi/N)*(0:N-1).'*mx.')*c1-xi+ones(N,1)*norm(c0,2)^2;
+% % 迭代
+% err = zeros(T+1,1);
+% alpha = 0.001;
+% disp(['第',num2str(1),'次迭代误差：~',', m=',num2str(m1.')]);
+% for tt = 1:T
+% % ------------------------ 梯度下降法
+%     dd = alpha*2*f1_m(m1).'*f_m(m1);
+%     m1 = m1 - dd;
+%     err(tt+1) = (2*K)\norm(f_m(m1),2)^2;
+%     disp(['第',num2str(tt+1),'次迭代误差：',num2str(err(tt+1)),', m=',num2str(m1.'), ', 方向：',num2str(dd.')]);
+% % ------------------------ 切比雪夫不好使    
+% %     disp(['第',num2str(tt),'次迭代误差：~',', m=',num2str(m1.')]);
+% %     f1m = f1_m(m1);
+% %     gm = (f1m.'*f1m)\f1m.';
+% %     fm = f_m(m1);
+% %     y = m1 - beta*gm*fm;
+% %     dd = gm*(fm+beta^2*(f_m(y)-fm+beta*f1m*gm*fm));
+% %     m1 = m1 - gm*(fm+beta^2*(f_m(y)-fm+beta*f1m*gm*fm));
+% % %     m1 = floor(m1);
+% %     err(tt+1) = (2*K)\norm(fm,2)^2;
+% %     disp(['第',num2str(tt+1),'次迭代误差：',num2str(err(tt+1)),', m=',num2str(m1.'), ', 方向：',num2str((gm*(fm+beta^2*(f_m(y)-fm+beta*f1m*gm*fm))).')]);
+% %     figure(10)
+% %     plot(1:tt,err(2:tt+1));
+% end
+% 
+% m = round(m1);
+% err(tt+2) = (2*K)\norm(f_m(m),2)^2;
+% disp(['第',num2str(tt+2),'次迭代误差：',num2str(err(tt+2))]);
+
+
+
+%% --------------------------------------------------- get xi_hat
 H = fft(h,N);
 H = reshape(H,[N,1]);
-xi = y./(abs(H)).^2;
-%  初始化
-threshold = 10e-4;
-T = 300;
-beta = -1;
+xi = y./(abs(H)).^2-ones(N,1)*norm(c00,2)^2;
 
-ccomb = nchoosek(c0,2);
+mcomb = nchoosek(m00,2);
+m1 = (2*pi/N)*(mcomb(:,2)-mcomb(:,1));
+ccomb = nchoosek(c00,2);
 c1 = 2*ccomb(:,1).*ccomb(:,2);
-m1 = [39;68;29]; m1 = [39;68;30];
-% m1 = ones(3,1)*(M/3);
-% m1 = floor(rand(floor(K*(K-1)*0.5),1)*M); m1 = sort(m1);
-f1_m = @(mx) (-2*pi/N)*diag(0:N-1,0)*sin((2*pi/N)*(0:N-1).'*mx.')*diag(c1,0);
-f_m = @(mx) cos((2*pi/N)*(0:N-1).'*mx.')*c1-xi+ones(N,1)*norm(c0,2)^2;
-% 迭代
-err = zeros(T,1);
-for tt = 1:T
-    f1m = f1_m(m1);
-    gm = (f1m.'*f1m)\f1m.';
-    fm = f_m(m1);
-    y = m1 - beta*gm*fm;
-    m1 = m1 - gm*(fm+beta^2*(f_m(y)-fm+beta*f1m*gm*fm));
-%     m1 = floor(m1);
-    err(tt+1) = (2*K)\norm(fm,2)^2;
-    disp(['第',num2str(tt+1),'次迭代误差：',num2str(err(tt+1))]);
-    figure(10)
-    plot(1:tt,err(2:tt+1));
+left = zeros(N,1);
+for i = 1:N
+    left(i,1) = c1.'*(cos(m1).^(i-1));
 end

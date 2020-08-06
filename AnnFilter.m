@@ -11,7 +11,8 @@ r = Z(N-K:N).';
 M = hankel(c,r);
 ZM = M(:,2:end);
 y = -1*M(:,1);
-x = (ZM.'*ZM)\ZM.'*y;
+% x = (ZM.'*ZM)\ZM.'*y;
+x = ZM\y;
 A = [1;x];
 u = roots(A).^(-1);
 

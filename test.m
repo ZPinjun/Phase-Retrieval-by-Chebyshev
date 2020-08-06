@@ -1,6 +1,6 @@
 clc;clear;close all
 M = 100;
-N = 300;
+N = 100;
 K = 3;
 %% --------------------------------------------------- 生成信号
 h = [1;5;3];
@@ -97,14 +97,14 @@ H = fft(h,N);
 H = reshape(H,[N,1]);
 xi = y./(abs(H)).^2-ones(N,1)*norm(c00,2)^2;
 
-mcomb = nchoosek(m00,2);
-m1 = (2*pi/N)*(mcomb(:,2)-mcomb(:,1));
-ccomb = nchoosek(c00,2);
-c1 = 2*ccomb(:,1).*ccomb(:,2);
-left = zeros(N,1);
-for i = 1:N
-    left(i,1) = c1.'*(cos(m1).^(i-1));
-end
+% mcomb = nchoosek(m00,2);
+% m1 = (2*pi/N)*(mcomb(:,2)-mcomb(:,1));
+% ccomb = nchoosek(c00,2);
+% c1 = 2*ccomb(:,1).*ccomb(:,2);
+% left = zeros(N,1);
+% for i = 1:N
+%     left(i,1) = c1.'*(cos(m1).^(i-1));
+% end
 
 % 计算并储存余弦n倍角系数表
 % maxn = 1000;
@@ -131,8 +131,8 @@ for j = 3:N
 end
 
 % call prony method
-u = AnnFilter(xi(1:100), 3);
+u = AnnFilter(xi(1:80), 3);
 
-u
-cos(m1)
+% u
+% cos(m1)
 dmr = acos(u).*(N/(2*pi))

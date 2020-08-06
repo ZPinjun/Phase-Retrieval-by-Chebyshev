@@ -1,6 +1,6 @@
 clc;clear;close all
 M = 100;
-N = 100;
+N = 300;
 K = 3;
 %% --------------------------------------------------- 生成信号
 h = [1;5;3];
@@ -105,3 +105,34 @@ left = zeros(N,1);
 for i = 1:N
     left(i,1) = c1.'*(cos(m1).^(i-1));
 end
+
+% 计算并储存余弦n倍角系数表
+% maxn = 1000;
+% cosn_coeff = zeros(maxn,round(maxn/2));
+% for n = 1:maxn
+%     for k = 0:floor(n/2)
+%         if(k~=0)
+%             cosn_coeff(n,k+1) = 2^(-2*k)*(nchoosek(n-k,k)+nchoosek(n-k-1,k-1))*(-1)^(k+1);
+%         else
+%             cosn_coeff(n,k+1) = 2^(1-n);    
+%         end
+%     end
+% end
+% save('cosn_coeff.mat','cosn_coeff');
+load('cosn_coeff.mat');
+% calculate xi_hat
+for j = 3:N
+    if mod(j,2)==1
+        xi1 = xi(j:-2:mod(j,2));
+    else
+        xi1 = xi(j:-2:mod(j,2)+2);
+    end
+    xi(j) = cosn_coeff(j-1,1:floor((j+1)/2))*xi1;
+end
+
+% call prony method
+u = AnnFilter(xi(1:100), 3);
+
+u
+cos(m1)
+dmr = acos(u).*(N/(2*pi))
